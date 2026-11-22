@@ -1,4 +1,7 @@
 
+const { spawnSync } = require("node:child_process");
+const path = require("node:path");
+
 const {
   addition,
   subtraction,
@@ -9,6 +12,8 @@ const {
   squareRoot,
   calculate,
 } = require("../calculator");
+
+const calculatorPath = path.join(__dirname, "..", "calculator.js");
 
 describe("calculator operations", () => {
   test.each([
@@ -118,6 +123,45 @@ describe("calculate", () => {
 
   test("propagates negative square root errors", () => {
     expect(() => calculate(-1, "sqrt")).toThrow(
+      "Cannot take the square root of a negative number.",
+    );
+  });
+});
+
+describe("calculator CLI", () => {
+  function runCli(...args) {
+    return spawnSync(process.execPath, [calculatorPath, ...args], {
+      encoding: "utf8",
+    });
+  }
+
+  test("calculates a square root", () => {
+    const result = runCli("9", "sqrt");
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toBe("3\n");
+    expect(result.stderr).toBe("");
+  });
+
+  test("rejects an extra operand for square root", () => {
+    const result = runCli("9", "sqrt", "1");
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("Usage: node src/calculator.js <number> sqrt");
+  });
+
+  test("rejects a nonnumeric square root operand", () => {
+    const result = runCli("not-a-number", "sqrt");
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("The operand must be a valid number.");
+  });
+
+  test("rejects a negative square root operand", () => {
+    const result = runCli("-1", "sqrt");
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
       "Cannot take the square root of a negative number.",
     );
   });
