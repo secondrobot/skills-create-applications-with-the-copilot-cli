@@ -32,6 +32,35 @@ function division(a, b) {
   return a / b;
 }
 
+/**
+ * Return the remainder after dividing the first number by the second.
+ */
+function modulo(a, b) {
+  if (b === 0) {
+    throw new Error("Cannot modulo by zero.");
+  }
+
+  return a % b;
+}
+
+/**
+ * Raise the base to the given exponent.
+ */
+function power(base, exponent) {
+  return base ** exponent;
+}
+
+/**
+ * Return the square root of a non-negative number.
+ */
+function squareRoot(n) {
+  if (n < 0) {
+    throw new Error("Cannot take the square root of a negative number.");
+  }
+
+  return Math.sqrt(n);
+}
+
 function calculate(a, operator, b) {
   switch (operator) {
     case "+":
@@ -42,20 +71,37 @@ function calculate(a, operator, b) {
       return multiplication(a, b);
     case "/":
       return division(a, b);
+    case "%":
+      return modulo(a, b);
+    case "^":
+      return power(a, b);
+    case "sqrt":
+      return squareRoot(a);
     default:
-      throw new Error("Unsupported operation. Use +, -, *, or /.");
+      throw new Error("Unsupported operation. Use +, -, *, /, %, ^, or sqrt.");
   }
 }
 
 function runCli(args) {
-  if (args.length !== 3) {
-    throw new Error("Usage: node src/calculator.js <number> <operator> <number>");
+  if (args.length < 2 || args.length > 3) {
+    throw new Error("Usage: node src/calculator.js <number> <operator> [number]");
   }
 
   const [leftInput, operator, rightInput] = args;
   const left = Number(leftInput);
-  const right = Number(rightInput);
 
+  if (operator === "sqrt") {
+    if (args.length !== 2) {
+      throw new Error("Usage: node src/calculator.js <number> sqrt");
+    }
+    if (!Number.isFinite(left)) {
+      throw new Error("The operand must be a valid number.");
+    }
+
+    return calculate(left, operator);
+  }
+
+  const right = Number(rightInput);
   if (!Number.isFinite(left) || !Number.isFinite(right)) {
     throw new Error("Both operands must be valid numbers.");
   }
@@ -77,5 +123,8 @@ module.exports = {
   subtraction,
   multiplication,
   division,
+  modulo,
+  power,
+  squareRoot,
   calculate,
 };
